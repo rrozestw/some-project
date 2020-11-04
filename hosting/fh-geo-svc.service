@@ -1,0 +1,24 @@
+[Unit]
+Description=FH Geo Service (Container)
+After=docker.service
+Requires=docker.service
+Requires=postgresql.service
+After=postgresql.service
+
+[Service]
+TimeoutStartSec=0
+Restart=always
+ExecStartPre=-/usr/bin/docker stop %n
+ExecStartPre=-/usr/bin/docker rm %n
+#ExecStartPre=/usr/bin/docker pull fh-geo-svc:v1
+ExecStartPre=/usr/bin/docker load --input /opt/fh-geo-svc.tar.gz
+ExecStart=/usr/bin/docker run \
+				--name %n \
+				--network host \
+				-e LISTEN="127.0.0.1:8080" \
+				--restart unless-stopped \
+				-v /opt/data:/app/data:ro \
+				fh-geo-svc:v1
+
+[Install]
+WantedBy=multi-user.target
